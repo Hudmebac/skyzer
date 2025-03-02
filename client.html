@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <input id="username" placeholder="Enter your name" />
+    <input id="room" placeholder="Enter room name" />
+    <button id="join">Join Room</button>
+    <div id="messages"></div>
+
+    <script>
+        const socket = io();
+
+        document.getElementById('join').onclick = () => {
+            const username = document.getElementById('username').value;
+            const room = document.getElementById('room').value;
+            socket.emit('joinRoom', { username, room });
+        };
+
+        socket.on('message', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<p>${message}</p>`;
+        });
+    </script>
+</body>
+</html>
