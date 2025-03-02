@@ -2,10 +2,18 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const socketIo = require('socket.io');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
+
+app.use(cors());
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -16,21 +24,19 @@ app.get('/', (req, res) => {
 });
 
 // Store rooms and users
-const rooms = {};
+let rooms = {};
 
 // WebSocket connection
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log('New client connected');
 
     // Join a room
-    socket.on('joinRoom', ({ roomCode, userName }) => {
-        if (!rooms[roomCode]) {
-            rooms[roomCode] = [];
+    socket.on('joinRoom', (room) => {
+        socket.join(room);
+        if (!rooms[room]) {
+            rooms[room] = [];
         }
-        rooms[roomCode].push(userName);
-        socket.join(roomCode);
-        io.to(roomCode).emit('roomUsers', rooms[roomCode]);
-        console.log(`${userName} joined room ${roomCode}`);
+        io.to(room).emit('roomData', rooms[room]);
     });
 
     // Handle card selection
@@ -52,9 +58,15 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Handle vote
+    socket.on('vote', ({ room, vote }) => {
+        rooms[room].push(vote);
+        io.to(room).emit('roomData', rooms[room]);
+    });
+
     // Disconnect
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('Client disconnected');
         // Remove user from rooms
         for (const roomCode in rooms) {
             rooms[roomCode] = rooms[roomCode].filter(user => user !== socket.id);
@@ -64,7 +76,7 @@ io.on('connection', (socket) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 }); 

@@ -182,6 +182,7 @@
             <div id="storyInputs">
                 <input type="text" placeholder="Story Title" id="storyTitle" maxlength="100" oninput="updateCharacterCount()">
                 <span id="titleCharCount">100 characters remaining</span>
+                <div id="storyMessage" class="message" style="display: none;"></div>
                 <textarea placeholder="Story Description" id="storyDescription" maxlength="300" oninput="updateDescriptionCharacterCount()" style="resize: none; overflow-y: auto; height: auto; max-height: 6em; line-height: 1.5em;"></textarea>
                 <span id="descriptionCharCount">300 characters remaining</span>
                 <button class="styled-button" id="addStoryButton">Add Story</button>
@@ -337,12 +338,11 @@
                 <p>
                     Story Skyzer is an interactive platform designed to help users create, manage, and size stories and portfolios. 
                     Whatever your role this should work for you. 
-                    Story Skyzer provides a user-friendly interface to facilitate your creative process.
+                    Story Skyzer provides a user-friendly interface to facilitate your sizing activities.
                 </p>
                 <p>
-                    With features like room creation, story addition, and collaborative voting, you can engage with others and receive feedback 
-                    on your work. The platform is designed to enhance your sizing or should I say Skyzing experience, making it easier to visualize and 
-                    refine your ideas.
+                    With features like room creation, story addition, and collaborative voting, you can engage with others and size together. 
+                    The platform is designed to enhance your sizing or should I say Skyzing experience.
                 </p>
                 <p>
                     Join us today and start your journey in sizing with Story Skyzer!
@@ -389,53 +389,23 @@
             }
         }
 
-        // Function to add a story
         document.getElementById('addStoryButton').addEventListener('click', function() {
             const storyTitle = document.getElementById('storyTitle').value.trim();
             const backlogList = document.getElementById('backlogList');
+            const existingTitles = Array.from(backlogList.getElementsByTagName('tr')).map(row => row.cells[0].textContent);
 
-            // Check if the title already exists in the backlog
-            let titleExists = false;
-            const rows = backlogList.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const titleCell = rows[i].getElementsByTagName('td')[0]; // Assuming title is in the first cell
-                if (titleCell && titleCell.textContent === storyTitle) {
-                    titleExists = true;
-                    break;
-                }
+            const messageDisplay = document.getElementById('storyMessage');
+
+            if (existingTitles.includes(storyTitle)) {
+                messageDisplay.textContent = 'This title already exists. Please edit the title before adding.';
+                messageDisplay.className = 'error';
+                messageDisplay.style.display = 'block';
+                return;
             }
 
-            if (titleExists) {
-                // Display advisory message
-                const messageDisplay = document.getElementById('messageDisplay');
-                messageDisplay.textContent = 'This title already exists in the backlog. Please choose a different title.';
-                messageDisplay.className = 'message error'; // Apply error styling
-                messageDisplay.style.display = 'block'; // Show the message
-
-                // Hide the message after a delay
-                setTimeout(() => {
-                    messageDisplay.style.display = 'none';
-                }, 3000);
-            } else {
-                // Logic to add the story to the backlog
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `<td>${storyTitle}</td><td><!-- Description --></td><td><!-- Score --></td><td><!-- Options --></td>`;
-                backlogList.appendChild(newRow);
-
-                // Clear the input field
-                document.getElementById('storyTitle').value = '';
-
-                // Display success message
-                const messageDisplay = document.getElementById('messageDisplay');
-                messageDisplay.textContent = 'Story added successfully!';
-                messageDisplay.className = 'message success'; // Apply success styling
-                messageDisplay.style.display = 'block'; // Show the message
-
-                // Hide the message after a delay
-                setTimeout(() => {
-                    messageDisplay.style.display = 'none';
-                }, 3000);
-            }
+            messageDisplay.textContent = 'Story added successfully!';
+            messageDisplay.className = 'success';
+            messageDisplay.style.display = 'block';
         });
 
         document.getElementById('descriptionToggle').addEventListener('click', function() {
