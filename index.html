@@ -389,9 +389,53 @@
             }
         }
 
+        // Function to add a story
         document.getElementById('addStoryButton').addEventListener('click', function() {
-            // Assuming you have logic to add a story
-            alert('Story added successfully!'); // Feedback for the user
+            const storyTitle = document.getElementById('storyTitle').value.trim();
+            const backlogList = document.getElementById('backlogList');
+
+            // Check if the title already exists in the backlog
+            let titleExists = false;
+            const rows = backlogList.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const titleCell = rows[i].getElementsByTagName('td')[0]; // Assuming title is in the first cell
+                if (titleCell && titleCell.textContent === storyTitle) {
+                    titleExists = true;
+                    break;
+                }
+            }
+
+            if (titleExists) {
+                // Display advisory message
+                const messageDisplay = document.getElementById('messageDisplay');
+                messageDisplay.textContent = 'This title already exists in the backlog. Please choose a different title.';
+                messageDisplay.className = 'message error'; // Apply error styling
+                messageDisplay.style.display = 'block'; // Show the message
+
+                // Hide the message after a delay
+                setTimeout(() => {
+                    messageDisplay.style.display = 'none';
+                }, 3000);
+            } else {
+                // Logic to add the story to the backlog
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `<td>${storyTitle}</td><td><!-- Description --></td><td><!-- Score --></td><td><!-- Options --></td>`;
+                backlogList.appendChild(newRow);
+
+                // Clear the input field
+                document.getElementById('storyTitle').value = '';
+
+                // Display success message
+                const messageDisplay = document.getElementById('messageDisplay');
+                messageDisplay.textContent = 'Story added successfully!';
+                messageDisplay.className = 'message success'; // Apply success styling
+                messageDisplay.style.display = 'block'; // Show the message
+
+                // Hide the message after a delay
+                setTimeout(() => {
+                    messageDisplay.style.display = 'none';
+                }, 3000);
+            }
         });
 
         document.getElementById('descriptionToggle').addEventListener('click', function() {
