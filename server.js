@@ -36,6 +36,7 @@ io.on('connection', (socket) => {
         if (!rooms[room]) {
             rooms[room] = [];
         }
+        rooms[room].push(socket.id);
         io.to(room).emit('roomData', rooms[room]);
     });
 
