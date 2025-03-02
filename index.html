@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyzer: Simple Story Sizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Light background for better contrast */
+            color: #333; /* Dark text for readability */
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ff6000, #ed1c24, #ed0677, #734993, #003663, #0076be, #1998f2); /* Left to right gradient */
+            padding: 20px; /* Padding for the header */
+            border-radius: 5px; /* Rounded corners for the header */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+        h1 {
+            color: white; /* White text for better contrast against the gradient */
+            font-size: 2.5em; /* Larger font size for the header */
+            margin: 0; /* Remove default margin */
+        }
+        /* Button styles reverted */
+        .styled-button {
+            background-color: #4a90e2; /* Button background color */
+            color: white; /* Button text color */
+            border: none;
+            border-radius: 5px; /* Rounded corners */
+            padding: 10px 15px; /* Padding for buttons */
+            cursor: pointer;
+            font-size: 16px; /* Font size for buttons */
+            transition: background-color 0.3s; /* Smooth transition */
+            margin: 5px; /* Space between buttons */
+        }
+        .styled-button:hover {
+            background-color: #357ab8; /* Darker shade on hover */
+        }
+        /* Add specific style for the Start button */
+        #joinCreatedRoomButton {
+            background-color: #28a745; /* Green background for Start button */
+        }
+        #joinCreatedRoomButton:hover {
+            background-color: #218838; /* Darker shade on hover */
+        }
+        /* Remove specific styles for the Copy Room ID and Edit Name buttons */
+        /* #copyRoomIdButton, #editNameButton { */
+        /*     background-color: #6c757d; */ /* Grey background for buttons */
+        /*     font-size: 25%; */ /* Reduce font size to 25% */
+        /*     padding: 5px 10px; */ /* Adjust padding for smaller size */
+        /* } */
+        /* #copyRoomIdButton:hover, #editNameButton:hover { */
+        /*     background-color: #5a6268; */ /* Darker grey on hover */
+        /* } */
+        input[type="text"], textarea {
+            width: 100%; /* Full width inputs */
+            padding: 10px; /* Padding for inputs */
+            border: 1px solid #ccc; /* Light border */
+            border-radius: 5px; /* Rounded corners */
+            margin-bottom: 10px; /* Space between inputs */
+            font-size: 16px; /* Font size for inputs */
+        }
+        #backlogTable {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px; /* Space above the table */
+            background-color: white; /* White background for the table */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+        #backlogTable th, #backlogTable td {
+            border: 1px solid #ccc; /* Light border for table cells */
+            padding: 12px; /* Padding for table cells */
+            text-align: left; /* Align text to the left */
+        }
+        #backlogTable th {
+            background-color: #e7f3fe; /* Light blue background for header */
+            font-weight: bold; /* Bold text for headers */
+        }
+        #backlogTable tr:nth-child(even) {
+            background-color: #f9f9f9; /* Zebra striping for rows */
+        }
+        #backlogTable tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px; /* Rounded corners for messages */
+            margin-top: 10px;
+            display: none; /* Hidden by default */
+        }
+        .success {
+            background-color: #d4edda; /* Green background for success messages */
+            color: #155724; /* Dark green text */
+        }
+        .error {
+            background-color: #f8d7da; /* Red background for error messages */
+            color: #721c24; /* Dark red text */
+        }
+        /* Add styles for the info icon and modal */
+        #infoIcon {
+            position: absolute; /* Position it in the top right */
+            top: 20px;
+            right: 20px;
+            cursor: pointer; /* Change cursor to pointer */
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+        /* Add responsive styles */
+        @media (max-width: 600px) {
+            header, footer {
+                text-align: center;
+            }
+            #infoIcon {
+                top: 10px;
+                right: 10px;
+            }
+            .styled-button {
+                width: 100%; /* Full width buttons on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Story Skyzer: (Story Sizer)</h1>
+        <span id="infoIcon" aria-label="How to navigate the application" style="font-size: 16px; cursor: pointer; position: absolute; top: 20px; right: 20px;">How To...</span>
+    </header>
+    <main>
+        <section id="userNameSection" aria-labelledby="userNameSection">
+            <h2>Please enter your name:</h2>
+            <input type="text" id="userNameInput" placeholder="Enter your name" aria-required="true" />
+            <button class="styled-button" id="submitNameButton">Submit</button>
+            <div id="nameError" class="error" style="display: none;" role="alert">Name is required to proceed.</div>
+        </section>
+        <section id="room" style="display: none;">
+            <h2>Welcome, <span id="displayUserName"></span>!</h2>
+            <button class="styled-button" id="editNameButton">Edit Name</button>
+            <button class="styled-button" id="joinRoomButton">Join</button>
+            <input type="text" placeholder="Enter Room Code" style="display: none;" id="roomCodeInput">
+            <button class="styled-button" id="submitRoomCodeButton" style="display: none;">Submit</button>
+            <button class="styled-button" id="createRoomButton" style="display: none;">Configure Room</button>
+            <button class="styled-button" id="generateRoomIdButton">Prepare Room</button>
+            <button class="styled-button" id="copyGeneratedRoomIdButton">Copy Room ID</button>
+            <button class="styled-button" id="joinCreatedRoomButton" style="display: none;">Start</button>
+            <div>
+                <h3>Room Details:</h3>
+                <p>User Name: <span id="roomUserName"></span></p>
+            </div>
+        </section>
+        <section id="createRoomConfig" style="display: none;">
+            <h2>Remember and Start</h2>
+            <label></label>
+            <div>
+                <label for="storyType">Story</label>
+                <input type="radio" id="storyType" name="roomType" value="Story" checked>
+                <label for="portfolioType">Portfolio</label>
+                <input type="radio" id="portfolioType" name="roomType" value="Portfolio">
+            </div>
+            <h3>Add</h3>
+            <div id="storyInputs">
+                <input type="text" placeholder="Story Title" id="storyTitle" maxlength="100" oninput="updateCharacterCount()">
+                <span id="titleCharCount">100 characters remaining</span>
+                <textarea placeholder="Story Description" id="storyDescription" maxlength="300" oninput="updateDescriptionCharacterCount()" style="resize: none; overflow-y: auto; height: auto; max-height: 6em; line-height: 1.5em;"></textarea>
+                <span id="descriptionCharCount">300 characters remaining</span>
+                <button class="styled-button" id="addStoryButton">Add Story</button>
+            </div>
+            <p id="generatedRoomId" style="display: block;"></p>
+            <button class="styled-button" id="clearBacklogButton">Clear Backlog</button>
+            <section id="backlog">
+                <h2>
+                    Backlog 
+                    <svg id="magnifyingGlass" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; margin-left: 5px; cursor: pointer;">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.398 1.398l3.646 3.646a1 1 0 0 0 1.414-1.414l-3.646-3.646zM7.5 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/>
+                    </svg>
+                </h2>
+                <div>
+                    <button class="styled-button" id="increaseTextSizeButton">Increase Text Size</button>
+                    <button class="styled-button" id="decreaseTextSizeButton">Decrease Text Size</button>
+                </div>
+                <table id="backlogTable">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Score</th>
+                            <th>Options</th>
+                        </tr>
+                    </thead>
+                    <tbody id="backlogList">
+                        <!-- Stories will be dynamically added here -->
+                    </tbody>
+                </table>
+            </section>
+        </section>
+        <section id="poker" style="display: none;">
+            <h2></h2>
+            <div id="feedbackControls" style="display: none;">
+                <button class="styled-button" id="startVotingButton">Start Voting</button>
+                <label for="votingTimeSelect">Voting Time:</label>
+                <select id="votingTimeSelect">
+                    <option value="0">Instant</option>
+                    <option value="3">3 Seconds</option>
+                    <option value="5" selected>5 Seconds</option>
+                    <option value="10">10 Seconds</option>
+                    <option value="15">15 Seconds</option>
+                </select>
+            </div>
+            <div id="timerDisplay" style="display: none;">
+                Time remaining: <span id="timeRemaining">5</span> seconds
+            </div>
+            <div id="timerMessage" style="display: none; color: red;"></div>
+            <div class="cards">
+                <!-- Poker cards will be dynamically generated here -->
+            </div>
+            <div id="votingResults" style="display: none;">
+                <h3>Voting Results</h3>
+                <div id="actionButtons" style="display: none;">
+                    <!-- Removed Manual Input and Revote Buttons -->
+                    <!-- Removed Submit Button -->
+                </div>
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Vote</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <!-- Voting results will be dynamically added here -->
+                    </tbody>
+                </table>
+                <div id="summaryResults" style="display: none;">
+                    <h4></h4>
+                    <button class="styled-button" id="toggleSummaryButton">Show Summary</button>
+                    <div id="summaryContent" style="display: none;">
+                        <p id="maxVote"></p>
+                        <p id="minVote"></p>
+                        <p id="totalVotes"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="roomInfo" style="display: none;">
+            <h2></h2>
+            <button class="styled-button" id="toggleRoomDetailsButton">Show Room Details</button>
+            <div id="roomDetails" style="display: none;">
+                <p id="roomIdDisplay"></p>
+                <p id="roomTypeDisplay"></p>
+                <p>User Name: <span id="roomUserName"></span></p>
+                <button class="styled-button" id="copyRoomIdButton">Copy Room ID</button>
+                <section id="users" style="display: none;">
+                    <h2>Users in Room</h2>
+                    <ul id="userList">
+                        <!-- User list will be dynamically populated here -->
+                    </ul>
+                </section>
+            </div>
+        </section>
+        <section id="selections" style="display: none;">
+            <h2>Card Selections</h2>
+            <ul id="selectionList">
+                <!-- Card selections will be dynamically populated here -->
+            </ul>
+        </section>
+        <div id="messageDisplay" class="message"></div>
+        <!-- Modal for action prompt -->
+        <div id="actionModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-button" id="closeModal">&times;</span>
+                <p>What would you like to do with the results?</p>
+                <button class="styled-button" id="modalRevoteButton">Revote</button>
+                <button class="styled-button" id="modalSubmitButton">Submit</button>
+                <button class="styled-button" id="modalManualInputButton">Manual Input</button>
+            </div>
+        </div>
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeInfoModal">&times;</span>
+                <h2>How to Navigate</h2>
+                <p>Welcome to Story Skyzer! Here's how to use the application:</p>
+                <h3>Getting Started</h3>
+                <ul>
+                    <li><strong>Enter Your Name:</strong> Type your name in the provided field and click 'Submit' to proceed.</li>
+                    <li><strong>Join or Create a Room:</strong> Use the buttons available to either join an existing room or create a new one.</li>
+                </ul>
+                <h3>Configuring Your Room</h3>
+                <ul>
+                    <li><strong>Choose Room Type:</strong> Select between 'Story' or 'Portfolio' using the radio buttons.</li>
+                    <li><strong>Add Your Story:</strong> Enter a title and description for your story, then click 'Add Story' to include it in your backlog.</li>
+                </ul>
+                <h3>Managing Your Backlog</h3>
+                <ul>
+                    <li><strong>View Your Stories:</strong> All added stories will be displayed in the backlog section.</li>
+                    <li><strong>Clear Backlog:</strong> Click 'Clear Backlog' to remove all stories from the list.</li>
+                </ul>
+                <h3>Participating in Voting</h3>
+                <ul>
+                    <li><strong>Start Voting:</strong> Click 'Start' to begin the voting process. Ensure you have added stories to vote on.</li>
+                    <li><strong>View Results:</strong> After voting, results will be displayed in the poker section.</li>
+                </ul>
+                <h3>Additional Tips</h3>
+                <ul>
+                    <li>Make sure to enter a valid room code if you are joining an existing room.</li>
+                    <li>Use the 'Edit Name' button to change your name at any time.</li>
+                    <li>If you encounter any issues, feel free to reach out for assistance.</li>
+                </ul>
+                <p>For any further assistance, feel free to reach out!</p>
+            </div>
+        </div>
+        <section id="descriptionSection">
+            <button id="descriptionToggle" class="styled-button" style="width: 100%; text-align: left;">
+                About Story Skyzer
+            </button>
+            <div id="descriptionContent" style="display: none;">
+                <p>
+                    Story Skyzer is an interactive platform designed to help users create, manage, and size stories and portfolios. 
+                    Whatever your role this should work for you. 
+                    Story Skyzer provides a user-friendly interface to facilitate your creative process.
+                </p>
+                <p>
+                    With features like room creation, story addition, and collaborative voting, you can engage with others and receive feedback 
+                    on your work. The platform is designed to enhance your sizing or should I say Skyzing experience, making it easier to visualize and 
+                    refine your ideas.
+                </p>
+                <p>
+                    Join us today and start your journey in sizing with Story Skyzer!
+                </p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; CME 2025 Skyzer</p>
+    </footer>
+    <script src="scripts.js"></script>
+    <script>
+        document.getElementById('submitNameButton').addEventListener('click', function() {
+            const userName = document.getElementById('userNameInput').value.trim();
+            if (userName) {
+                document.getElementById('displayUserName').textContent = userName;
+                document.getElementById('roomUserName').textContent = userName;
+                document.getElementById('userNameSection').style.display = 'none';
+                document.getElementById('room').style.display = 'block';
+            } else {
+                document.getElementById('nameError').style.display = 'block';
+            }
+        });
+
+        document.getElementById('editNameButton').addEventListener('click', function() {
+            const userName = prompt("Edit your name:", document.getElementById('displayUserName').textContent);
+            if (userName) {
+                document.getElementById('displayUserName').textContent = userName;
+                document.getElementById('roomUserName').textContent = userName;
+            }
+        });
+
+        document.getElementById('infoIcon').addEventListener('click', function() {
+            document.getElementById('infoModal').style.display = 'block';
+        });
+
+        document.getElementById('closeInfoModal').addEventListener('click', function() {
+            document.getElementById('infoModal').style.display = 'none';
+        });
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('infoModal')) {
+                document.getElementById('infoModal').style.display = 'none';
+            }
+        }
+
+        document.getElementById('addStoryButton').addEventListener('click', function() {
+            // Assuming you have logic to add a story
+            alert('Story added successfully!'); // Feedback for the user
+        });
+
+        document.getElementById('descriptionToggle').addEventListener('click', function() {
+            const content = document.getElementById('descriptionContent');
+            if (content.style.display === "none" || content.style.display === "") {
+                content.style.display = "block"; // Show the content
+            } else {
+                content.style.display = "none"; // Hide the content
+            }
+        });
+    </script>
+</body>
+</html>
